@@ -1,0 +1,18 @@
+{
+  "name": "smmg-bot",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Smart Meeting Minutes Generator - Jitsi meeting bot. Joins a meeting on request from the Flask backend, captures per-participant audio and uploads it.",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test \"test/*.test.js\"",
+    "smoke": "node scripts/capture-smoke.js && node scripts/capture-store-smoke.js"
+  },
+  "dependencies": {
+    "playwright": "^1.47.0"
+  }
+}

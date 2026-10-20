@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // The Flutter app never talks to Firestore directly. All access goes through the backend
+    // (Firebase Admin SDK, which bypasses these rules), where ownership is enforced per request.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

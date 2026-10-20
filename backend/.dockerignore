@@ -1,0 +1,9 @@
+tests/
+tmp_audio/
+__pycache__/
+*.pyc
+.env
+venv/
+.venv/
+*.json.key
+service-account*.json

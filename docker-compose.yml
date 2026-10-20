@@ -1,0 +1,83 @@
+# Production-style deployment: HTTPS proxy + Flask backend + Node bot.
+#   1. cp deploy/.env.example .env  and fill it in        (compose refuses to start while required values are missing)
+#   2. put the Firebase service-account JSON at deploy/secrets/firebase-service-account.json
+#   3. docker compose up -d --build
+# Only Caddy publishes ports. The backend and the bot are reachable only from inside the compose network
+# (they still have outbound internet: Firebase, OpenAI and the Jitsi server).
+name: smmg
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SMMG_DOMAIN: ${SMMG_DOMAIN:?set SMMG_DOMAIN to the public host name that points at this machine}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    expose: ["5000"]
+    environment:
+      APP_ENV: production
+      AUTH_MODE: firebase
+      STORE_BACKEND: firestore
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?set FIREBASE_PROJECT_ID}
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase_service_account
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      WHISPER_MODEL: ${WHISPER_MODEL:-base}
+      WHISPER_LANGUAGE: ${WHISPER_LANGUAGE:-}
+      BOT_SERVER_URL: http://bot:3000
+      BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:?set BOT_SHARED_SECRET (at least 32 random characters)}
+      # The address the BOT uses to reach the backend: the compose network, not the public domain.
+      PUBLIC_BACKEND_URL: http://backend:5000
+      JITSI_ALLOWED_HOSTS: ${JITSI_ALLOWED_HOSTS:-}
+      DEFAULT_JITSI_SERVER: ${DEFAULT_JITSI_SERVER:-https://meet.jit.si}
+      TEMP_DIR: /data/tmp_audio
+    secrets: [firebase_service_account]
+    volumes:
+      - whisper_models:/models
+    # Raw audio lives in memory only: it disappears when the container stops, so it can never outlive a restart.
+    tmpfs:
+      - /data/tmp_audio:size=${TEMP_TMPFS_SIZE:-2g},uid=10001
+
+  bot:
+    build: ./bot
+    restart: unless-stopped
+    expose: ["3000"]
+    environment:
+      BOT_HOST: 0.0.0.0
+      BOT_PORT: "3000"
+      BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:?set BOT_SHARED_SECRET (at least 32 random characters)}
+      BOT_DRIVER: playwright
+      BOT_HEADLESS: "true"
+      # Chromium's sandbox needs extra kernel privileges that containers usually do not grant.
+      BOT_CHROMIUM_NO_SANDBOX: "true"
+      # Plain http is acceptable ONLY because this address stays inside the compose network.
+      BOT_ALLOW_HTTP_BACKEND: "true"
+      BOT_BACKEND_ALLOWLIST: http://backend:5000
+      BOT_JITSI_ALLOWED_HOSTS: ${JITSI_ALLOWED_HOSTS:-}
+    shm_size: "1gb"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  caddy_data: {}
+  caddy_config: {}
+  whisper_models: {}
+
+secrets:
+  firebase_service_account:
+    file: ./deploy/secrets/firebase-service-account.json

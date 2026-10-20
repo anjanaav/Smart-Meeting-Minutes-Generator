@@ -1,0 +1,21 @@
+# HTTPS front door. Caddy obtains and renews a Let's Encrypt certificate for {$SMMG_DOMAIN} automatically.
+# Only this service is published (ports 80 and 443). The bot and the backend are not reachable from outside.
+{$SMMG_DOMAIN} {
+	encode zstd gzip
+	# Audio chunks are small, but leave room for the backend's own limit (MAX_AUDIO_CHUNK_BYTES).
+	request_body {
+		max_size 40MB
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+	reverse_proxy backend:5000 {
+		# Minutes generation can be slow; do not cut long requests.
+		transport http {
+			response_header_timeout 180s
+		}
+	}
+}

@@ -1,0 +1,7 @@
+Flask>=3.0,<4
+python-dotenv>=1.0
+firebase-admin>=6.5          # Firebase Auth token verification + Firestore (server-side)
+reportlab>=4.0               # PDF export
+faster-whisper>=1.0          # speech recognition (or: openai-whisper). Needs ffmpeg on PATH for the audio probe.
+waitress>=3.0; sys_platform == "win32"   # production WSGI server on Windows
+gunicorn>=22; sys_platform != "win32"   # production WSGI server on Linux/macOS (used by the Dockerfile)
