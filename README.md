@@ -1,109 +1,112 @@
 
 # Smart Meeting Minutes Generator (SMMG)
 
-Smart Meeting Minutes Generator aims to reduce manual note-taking by organizing meeting information into structured summaries, key decisions, and action items. The project combines a Flutter mobile application, Flask backend, Node.js meeting bot, speech recognition, NLP, and minutes generation.
+An AI-assisted meeting minutes application designed to turn meeting discussions into structured notes, key decisions, and action items.
+
+SMMG combines a Flutter mobile application, a Flask backend, a Node.js meeting bot, speech-to-text processing, NLP, and Firestore-oriented storage.
+
+## Overview
+
+Taking meeting minutes manually can be time-consuming. SMMG is designed to help by processing meeting audio and turning the resulting transcript into organized meeting information.
+
+### Key capabilities
+
+- **Meeting integration:** A Node.js bot is designed to join Jitsi meeting rooms.
+- **Speech-to-text:** Uses a Whisper-based speech recognition component to produce transcript text.
+- **Text processing:** An NLP pipeline processes transcript content for structured meeting information.
+- **Minutes generation:** Supports generated meeting minutes using an LLM or a rule-based provider.
+- **Mobile application:** Flutter provides the mobile client.
+- **Backend APIs:** Flask exposes API endpoints for communication between components.
+- **Data storage:** Firestore integration is included for meeting data.
+- **Testing:** The repository includes backend, bot, deployment, and simulated end-to-end checks.
+
+> **Project status:** Automated tests cover several components, but passing tests do not establish that every live integration works end to end. Check `STATUS.md` for the current verification status. Docker images and the complete live Jitsi, transcription, AI, and Firebase workflow must be tested in the target environment before being described as fully verified.
 
 ## Architecture
 
 ```text
-Flutter App
-    |
-    | HTTPS / JSON
-    v
-Flask Backend <----> Node.js Bot
-    |                    |
-    |                    v
-    |              Chromium / Playwright
-    |                    |
-    |                    v
-    |                 Jitsi Room
-    |
-    v
-ASR (Whisper) -> NLP -> Minutes (LLM or rules) -> Firestore
+Flutter Mobile App
+        |
+        | HTTPS / JSON
+        v
+Flask Backend API
+        |
+        | Meeting control and events
+        v
+Node.js Bot + Chromium
+        |
+        v
+     Jitsi Room
+
+Audio / transcript processing:
+Whisper ASR -> NLP -> Minutes Generation
+                         |
+                         v
+                    Firestore
 ```
 
-## Key Features
+## Technology stack
 
-- Jitsi Meet meeting workflow
-- Audio transcription and transcript processing
-- Structured meeting summaries and key decisions
-- Action-item extraction
-- Backend APIs for communication between services
-- Flutter mobile application
-- Firestore integration for supported storage workflows
-
-> **Note:** The complete live meeting-to-summary workflow and all external integrations have not been verified. See [`STATUS.md`](STATUS.md) for implementation status and test results.
-
-## Technology Stack
-
-| Component | Technologies |
+| Component | Technology |
 |---|---|
 | Mobile application | Flutter, Dart |
-| Backend | Python, Flask |
-| Meeting bot | Node.js, Playwright, Chromium |
+| Backend API | Python, Flask |
+| Meeting bot | Node.js, Playwright / Chromium |
+| Meeting platform | Jitsi |
 | Speech recognition | Whisper |
-| NLP and minutes generation | NLP, LLM or rule-based processing |
-| API communication | HTTPS, JSON, REST APIs |
-| Storage | Firestore |
-| Deployment | Docker Compose, Caddy, HTTPS |
+| Text processing | NLP pipeline |
+| Minutes generation | LLM or rule-based provider |
+| Data storage | Firebase Firestore |
+| Deployment configuration | Docker Compose, Caddy |
+| Testing | Python unittest, Node.js tests, simulated E2E checks |
 
-## Project Structure
+## Repository structure
 
-| Folder / File | Description | Tests / Commands |
-|---|---|---|
-| `app/` | Flutter mobile application | `cd app && flutter test` — 24 tests, not yet run |
-| `app/tools/` | Android preparation and Dart pre-flight checks | `cd app && python3 -m unittest tools.test_prepare_android tools.test_check_dart` — 16 tests |
-| `backend/` | Flask API, ASR, NLP, minutes generator, storage | `cd backend && python3 -m unittest discover -s tests -t .` — 170 tests |
-| `bot/` | Jitsi bot using Playwright and Chromium | `cd bot && npm test` — 59 tests |
-| `e2e/` | Backend-to-bot integration using a simulated meeting | `python3 e2e/run_e2e.py` — 28 checks |
-| `firebase/` | Firestore rules and indexes | See Firebase setup |
-| `docs/API.md` | API contract | Reference documentation |
-| `docs/TROUBLESHOOTING.md` | Sign-in, Jitsi, transcription, minutes, export, and Docker troubleshooting | Reference documentation |
-| `docker-compose.yml`, `deploy/` | HTTPS deployment configuration | `python3 -m unittest e2e.test_deploy` — 22 tests |
+```text
+Smart-Meeting-Minutes-Generator/
+├── app/          # Flutter mobile application
+├── backend/      # Flask API, speech processing and minutes logic
+├── bot/          # Node.js meeting bot
+├── deploy/       # Deployment configuration
+├── docs/         # API and troubleshooting documentation
+├── e2e/          # Simulated end-to-end and deployment checks
+├── firebase/     # Firestore rules and indexes
+├── STATUS.md     # Implementation and verification status
+└── README.md
+```
 
-Test counts reflect the documented results. Passing component tests or simulated integration checks does not prove that the complete live system works.
-
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-- Python 3
+Install the tools required for the component you want to run:
+
+- Python and pip
 - Node.js and npm
 - Flutter SDK for the mobile application
-- FFmpeg available on `PATH`
-- Playwright and Chromium for bot testing
-- Firebase and any required external service credentials
+- Playwright browser dependencies for the meeting bot
+- FFmpeg for audio processing where required
+- Firebase project credentials if using Firebase-backed features
+- API credentials for any configured external AI provider
 
-### 1. Start the Backend
+### 1. Backend
 
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
-Copy `.env.example` to `.env` and configure the required environment variables.
+Copy `.env.example` to `.env` and configure the required environment variables according to the backend documentation.
 
-For a local trial without Firebase, the documented development configuration is:
-
-```env
-AUTH_MODE=dev
-STORE_BACKEND=memory
-LLM_PROVIDER=rules
-```
-
-Set `BOT_SHARED_SECRET` to a secret of at least 32 characters. Use the same secret in the bot configuration.
-
-**Important:** This development configuration is for local trials only, not production.
-
-Start the backend:
+Start the backend using the command documented for your setup. For the repository's WSGI development entry point:
 
 ```bash
 python wsgi.py
 ```
 
-Ensure FFmpeg is available on `PATH`.
+### 2. Meeting bot
 
-### 2. Start the Meeting Bot
+In a separate terminal:
 
 ```bash
 cd bot
@@ -111,123 +114,55 @@ npm install
 npx playwright install chromium
 ```
 
-Copy `bot/.env.example` to `bot/.env` and configure the required values, including the same `BOT_SHARED_SECRET` used by the backend.
+Configure the bot environment variables using `bot/.env.example`, including the shared secret required to communicate with the backend.
 
-Start the bot:
+Start the bot using the repository's configured start script:
 
 ```bash
 npm start
 ```
 
-### 3. Run the Flutter Application
+### 3. Flutter application
 
-Follow [`app/README.md`](app/README.md) for application-specific setup, dependencies, and backend URL configuration.
+Follow the instructions in `app/README.md`. Configure the backend URL and any required Firebase settings before running the app.
 
-A configured Flutter SDK is required to run and test the application.
+> Configuration varies by environment. Do not commit API keys, Firebase service-account files, passwords, or shared secrets to GitHub.
 
 ## Testing
 
-### Backend-to-Bot Integration Checks
+The repository includes automated checks for multiple components.
 
-```bash
-python3 e2e/run_e2e.py
-```
+| Area | Test command |
+|---|---|
+| Backend | `cd backend && python3 -m unittest discover -s tests -t .` |
+| Meeting bot | `cd bot && npm test` |
+| Flutter app | `cd app && flutter test` |
+| Android preparation and Dart checks | See the test commands documented in the repository |
+| Simulated end-to-end checks | `python3 e2e/run_e2e.py` |
+| Deployment configuration checks | `python3 -m unittest e2e.test_deploy` |
+| Bot smoke checks | `cd bot && npm run smoke` |
 
-Requirements include Flask, Node.js, and FFmpeg.
+Test prerequisites and current results may vary. Consult `STATUS.md` before interpreting test counts or claiming that a component has been verified.
 
-### Deployment Configuration Tests
+## Security and configuration
 
-```bash
-python3 -m unittest e2e.test_deploy
-```
+- Keep secrets in local environment files, not source control.
+- Use strong shared secrets between the backend and meeting bot.
+- Configure Firebase rules and indexes for the target project.
+- Use HTTPS for deployed environments.
+- Review `docs/TROUBLESHOOTING.md` and deployment documentation before deploying.
 
-Dependencies include PyYAML, `python-dotenv`, and Gunicorn.
+## Current limitations
 
-### Bot Browser Smoke Tests
+SMMG is an ongoing project. Local automated checks and simulated tests do not necessarily validate live meeting participation, real audio transcription, external AI-provider access, Firebase connectivity, or a production deployment.
 
-```bash
-cd bot
-npm run smoke
-```
+Refer to [`STATUS.md`](STATUS.md) for the latest implementation and verification details.
 
-Requires Playwright and Chromium. The documented smoke tests use local pages.
+## Future improvements
 
-### Flutter Tests
-
-```bash
-cd app
-flutter test
-```
-
-The repository documents 24 Flutter tests, but they have not yet been run. Execute them with a configured Flutter SDK and update `STATUS.md` with the actual result.
-
-## HTTPS Deployment with Docker
-
-1. Copy the deployment environment template:
-
-   ```bash
-   cp deploy/.env.example .env
-   ```
-
-2. Configure required values, including `SMMG_DOMAIN`, `FIREBASE_PROJECT_ID`, and `BOT_SHARED_SECRET`, plus `OPENAI_API_KEY` if applicable.
-
-3. Place your Firebase service-account file at:
-
-   ```text
-   deploy/secrets/firebase-service-account.json
-   ```
-
-4. Deploy Firestore rules and indexes:
-
-   ```bash
-   cd firebase
-   firebase deploy --only firestore --project <your-firebase-project-id>
-   cd ..
-   ```
-
-5. Build and start the services:
-
-   ```bash
-   docker compose up -d --build
-   ```
-
-The documented configuration publishes Caddy on ports 80 and 443. Caddy handles HTTPS and automatic Let's Encrypt certificates for `SMMG_DOMAIN`. The backend and bot are intended to be accessible only inside the Docker Compose network.
-
-Raw audio is held in memory using `tmpfs` and disappears when the container stops. Configure the mobile application with the appropriate HTTPS backend URL.
-
-**Deployment limitation:** The Docker images have not been built in the documented build environment because a Docker daemon was unavailable. The files were validated, but a successful image build and live deployment have not been established.
-
-See [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) for further setup and troubleshooting information.
-
-## Screenshots
-
-Add screenshots of the actual application when available:
-
-- Flutter mobile application interface
-- Meeting or transcript workflow
-- Generated meeting summary
-- Extracted decisions and action items
-
-Only include genuine project screenshots. Clearly label mockups or simulated outputs.
-
-## Current Status and Limitations
-
-See [`STATUS.md`](STATUS.md) for detailed implementation status, test results, and known limitations.
-
-Outstanding verification includes:
-
-- Running the Flutter test suite
-- Testing the live Jitsi meeting workflow
-- Verifying real speech recognition and minutes generation integrations
-- Building and testing the Docker deployment
-- Validating the complete workflow with the configured storage and external services
-
-## Future Improvements
-
-- Complete end-to-end testing with a real Jitsi meeting
-- Validate the Flutter application and backend integration
-- Verify live speech recognition, NLP, and minutes generation
-- Build and test Docker images
-- Improve error handling and integration reliability
-
+- Verify the full live meeting-to-minutes workflow.
+- Run Flutter tests in a configured Flutter environment.
+- Build and test the Docker images in a Docker-enabled environment.
+- Improve speaker attribution and action-item accuracy.
+- Add more end-to-end integration tests.
 
