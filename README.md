@@ -230,8 +230,4 @@ Outstanding verification includes:
 - Build and test Docker images
 - Improve error handling and integration reliability
 
-## Author
 
-**Anjana A V**
-
-GitHub: [anjanaav](https://github.com/anjanaav)
