@@ -41,3 +41,99 @@ python3 -m unittest e2e.test_deploy      # deployment files + the backend under 
 cd bot && npm run smoke                  # needs Playwright + Chromium; real browser, local pages (19 checks)
 ```
 See `STATUS.md` for exactly what has and has not been verified.
+
+**Overview
+**
+Smart Meeting Minutes Generator aims to reduce manual note-taking by organizing meeting information into a readable format. The project combines a meeting bot, backend processing services, speech recognition, and a mobile application.
+
+**Key Features**
+
+Meeting workflow designed around Jitsi Meet.
+
+Audio transcription and transcript processing.
+
+Structured meeting summaries and key decisions.
+
+Action-item extraction.
+
+Backend APIs for processing and exchanging meeting data.
+
+Flutter application interface.
+
+Note: Feature availability depends on the current implementation. Refer to STATUS.md for test results and known limitations.
+
+**Technology Stack**
+
+Mobile application: Flutter, Dart
+
+Backend: Python, Flask
+
+Meeting bot: Node.js, Playwright
+
+Processing: Speech recognition and NLP
+
+Integration: REST APIs
+
+**Project Structure**
+
+app/ — Flutter application
+
+backend/ — backend processing services
+
+bot/ — meeting bot components
+
+deploy/ — deployment-related files
+
+docs/ — project documentation
+
+e2e/ — end-to-end test resources
+
+firebase/ — Firebase-related resources
+
+**Getting Started**
+
+Clone the repository.
+
+Review STATUS.md and the documentation in docs/.
+
+Install the dependencies for the component you want to run.
+
+Configure the required environment variables and external services.
+
+Follow the component-specific instructions in the repository.
+
+Run the available tests before attempting the complete workflow.
+
+The application and its services may require separate setup steps. Do not assume that all components work together without additional configuration.
+
+**Screenshots**
+
+Add screenshots of the actual application here when available.
+
+Suggested screenshots:
+
+Mobile application interface
+
+Meeting or transcript workflow
+
+Generated meeting summary
+
+Action items and decisions
+
+**Testing and Current Status**
+
+See STATUS.md for documented test results, implementation status, and known limitations.
+
+Backend or simulated integration test results do not by themselves establish that the complete live meeting-to-summary workflow works.
+
+**Future Improvements**
+
+Verify the complete Jitsi-to-summary workflow.
+
+Complete Flutter application validation.
+
+Validate live speech recognition and NLP integrations.
+
+Improve error handling and end-to-end testing.
+
+
