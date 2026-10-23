@@ -42,11 +42,12 @@ cd bot && npm run smoke                  # needs Playwright + Chromium; real bro
 ```
 See `STATUS.md` for exactly what has and has not been verified.
 
-**Overview
-**
+##**Overview**
+
 Smart Meeting Minutes Generator aims to reduce manual note-taking by organizing meeting information into a readable format. The project combines a meeting bot, backend processing services, speech recognition, and a mobile application.
 
-**Key Features**
+##**Key Features**
+
 
 Meeting workflow designed around Jitsi Meet.
 
@@ -62,7 +63,7 @@ Flutter application interface.
 
 Note: Feature availability depends on the current implementation. Refer to STATUS.md for test results and known limitations.
 
-**Technology Stack**
+##**Technology Stack**
 
 Mobile application: Flutter, Dart
 
@@ -74,7 +75,7 @@ Processing: Speech recognition and NLP
 
 Integration: REST APIs
 
-**Project Structure**
+##**Project Structure**
 
 app/ — Flutter application
 
@@ -90,7 +91,7 @@ e2e/ — end-to-end test resources
 
 firebase/ — Firebase-related resources
 
-**Getting Started**
+##**Getting Started**
 
 Clone the repository.
 
@@ -106,7 +107,7 @@ Run the available tests before attempting the complete workflow.
 
 The application and its services may require separate setup steps. Do not assume that all components work together without additional configuration.
 
-**Screenshots**
+##**Screenshots**
 
 Add screenshots of the actual application here when available.
 
@@ -120,13 +121,13 @@ Generated meeting summary
 
 Action items and decisions
 
-**Testing and Current Status**
+##**Testing and Current Status**
 
 See STATUS.md for documented test results, implementation status, and known limitations.
 
 Backend or simulated integration test results do not by themselves establish that the complete live meeting-to-summary workflow works.
 
-**Future Improvements**
+##**Future Improvements**
 
 Verify the complete Jitsi-to-summary workflow.
 
